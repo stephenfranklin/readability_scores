@@ -1,0 +1,129 @@
+---
+title: "readability"
+author: "Stephen Franklin"
+date: "10/30/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+How readable are the readability scores?
+
+```{r}
+library(qdap)
+
+FRE = "
+Flesch Reading Ease
+In the 1940s, Rudolf Flesch developed the Flesch Reading Ease (FRE) test. 
+The U.S. Department of Defense uses the FRE to help craft its documents and manuals. 
+The FRE computes a score based on the number of syllables, the number of words, and the number of sentences in a text. 
+The FRE formula is as follows:
+Two hundred six point eight three five minus one point zero one five times the quantity, total words over total sentences, close quantity, minus eighty four point six times the quantity, total syllables over total words.
+The FRE formula was designed to produce a score between 0 and 100, with the highest score (100) representing a 5th-grade equivalent reading level and the lowest score (0) representing college graduate-equivalent reading level. 
+However, a score can be negative, representing increased difficulty. 
+Therefore, the higher the score, the easier the text is to read. 
+Rudolf Flesch created the following guide to interpreting FRE scores:
+
+Score	School level
+90 to 100	5th grade
+80 to 90	6th grade
+70 to 80	7th grade
+60 to 70	8th and 9th grade
+50 to 60	10th to 12th grade
+30 to 50	College
+0 to 30	College graduate"
+
+FRE0 = "206.835 - 1.015 (total words / total sentences) - 84.6 (total syllables / total words)"
+FRE_zero = "Two hundred six point eight three five minus one point zero one five times the quantity, total words over total sentences, close quantity, minus eighty four point six times the quantity, total syllables over total words."
+
+FRE_s = syllable_sum(FRE)  ## 268
+FRE_w = word_count(FRE)    ## 183
+FRE_ss = 10
+
+FRE_score = 206.835 - 1.015*(FRE_w/FRE_ss) - 84.6*(FRE_s/FRE_w)
+FRE_score
+## 64.37 - 9th grade
+
+
+FKGL = "
+Flesch-Kincaid Grade Level.
+In 1975, J. Peter Kincaid recalculated FRE to give a score in the form of a U.S. school grade level for use by the U.S. Navy. 
+This new formula became known as the Flesch-Kincaid Grade Level (FKGL) test. 
+Like FRE, the FKGL computes a score based on the number of syllables, the number of words, and the number of sentences in a text. 
+The FKGL formula is as follows:
+Zero point three nine times the quantity, total words over total sentences, close quantity, plus eleven point eight times the quantity, total syllables over total words, close quantity, minus fifteen point five nine.
+The FKGL produces a score equivalent to the estimated number of years of education required to understand a text. 
+A score of 9 estimates that a U.S. 9th grade student would be able to read and comprehend a text, while a score of 18 estimates that a person with 18 years of U.S. formal education would be able to read and comprehend a text."
+
+FKGL0 = "0.39 (total words / total sentences) + 11.8 (total syllables / total words) - 15.59"
+FKGL_zero = "Zero point three nine times the quantity, total words over total sentences, close quantity, plus eleven point eight times the quantity, total syllables over total words, close quantity, minus fifteen point five nine."
+
+FKGL_s = syllable_sum(FKGL)  ## 238
+FKGL_w = word_count(FKGL)    ## 165
+FKGL_ss = 7
+
+FKGL_score = 0.39*(FKGL_w/FKGL_ss) + 11.8*(FRE_s/FRE_w) - 15.59
+FKGL_score
+## 10.89  10th grade
+
+
+##### What about just the formulas:
+FRE_s = syllable_sum(FRE_zero)
+FRE_w = word_count(FRE_zero)
+FRE_ss = 1
+FRE_score = 206.835 - 1.015*(FRE_w/FRE_ss) - 84.6*(FRE_s/FRE_w)
+FRE_score
+## 38.70 College
+
+FKGL_s = syllable_sum(FKGL_zero)
+FKGL_w = word_count(FKGL_zero)
+FKGL_ss = 1
+FKGL_score = 0.39*(FKGL_w/FKGL_ss) + 11.8*(FRE_s/FRE_w) - 15.59
+FKGL_score
+## 15.64 College
+
+#### how do they measure each other:
+FRE_s = syllable_sum(FKGL)
+FRE_w = word_count(FKGL)
+FRE_ss = 7
+FRE_scoring_FKGL = 206.835 - 1.015*(FRE_w/FRE_ss) - 84.6*(FRE_s/FRE_w)
+FRE_scoring_FKGL
+## 60.88 8th grade
+
+FKGL_s = syllable_sum(FRE)
+FKGL_w = word_count(FRE)
+FKGL_ss = 10
+FKGL_scoring_FRE = 0.39*(FKGL_w/FKGL_ss) + 11.8*(FRE_s/FRE_w) - 15.59
+FKGL_scoring_FRE
+## 8.83 8th grade
+
+
+#### how do they measure each other for just the formula:
+FRE_s = syllable_sum(FKGL_zero)
+FRE_w = word_count(FKGL_zero)
+FRE_ss = 1
+FRE_scoring_FKGL = 206.835 - 1.015*(FRE_w/FRE_ss) - 84.6*(FRE_s/FRE_w)
+FRE_scoring_FKGL
+## 32.34 College
+
+FKGL_s = syllable_sum(FRE_zero)
+FKGL_w = word_count(FRE_zero)
+FKGL_ss = 1
+FKGL_scoring_FRE = 0.39*(FKGL_w/FKGL_ss) + 11.8*(FRE_s/FRE_w) - 15.59
+FKGL_scoring_FRE
+## 18.11667 College
+```
+
+Summary
+
+The FKGL for the FKGL formula is 15th grade. The FRE for the FRE formula is 39.
+The FKGL for the FKGL summary is 11th grade. The FRE for the FRE summary is 64.
+
+The Flesch Reading Ease (FRE) readability score of itself is 64.4, 8th or 9th grade.
+The FKGL for the FKGL readability score of itself is 10.9, 10th or 11th grade.
+
+FRE scores FKGL as 61.
+FKGL scores FRE as 8th grade.
+
